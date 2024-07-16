@@ -7,8 +7,8 @@ $(call inherit-product, vendor/twrp/config/common.mk)
 # Inherit from a02q device
 $(call inherit-product, device/samsung/a02q/device.mk)
 
-PRODUCT_DEVICE := a02q
-PRODUCT_NAME := omni_a02q
+PRODUCT_DEVICE := m02s
+PRODUCT_NAME := omni_m02s
 PRODUCT_BRAND := samsung
 PRODUCT_MODEL := Galaxy M02s
 PRODUCT_MANUFACTURER := samsung
