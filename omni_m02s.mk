@@ -1,11 +1,11 @@
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
 
-# Inherit some common Omni stuff.
+# Inherit some common omni stuff.
 $(call inherit-product, vendor/twrp/config/common.mk)
 
-# Inherit from a02q device
-$(call inherit-product, device/samsung/a02q/device.mk)
+# Inherit from m02s device
+$(call inherit-product, device/samsung/m02s/device.mk)
 
 PRODUCT_DEVICE := m02s
 PRODUCT_NAME := omni_m02s
