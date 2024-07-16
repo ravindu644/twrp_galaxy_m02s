@@ -9,6 +9,6 @@ PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/omni_m02s.mk
 
 COMMON_LUNCH_CHOICES := \
-    omni_a02q-user \
-    omni_a02q-userdebug \
-    omni_a02q-eng
+    omni_m02s-user \
+    omni_m02s-userdebug \
+    omni_m02s-eng
