@@ -1,0 +1,7 @@
+[
+  {
+    "repository": "mlm-games/Samsung-M02s-Kernel",
+    "target_path": "kernel/samsung/m02s",
+    "branch": "main"
+  }
+]
