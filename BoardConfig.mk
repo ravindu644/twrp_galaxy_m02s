@@ -73,5 +73,5 @@ TW_Y_OFFSET := 79
 TW_H_OFFSET := -79
 TW_HAS_DOWNLOAD_MODE := true
 TW_EXCLUDE_DEFAULT_USB_INIT := true
-TW_DEVICE_VERSION := Ravindu Deshan #use your name
+TW_DEVICE_VERSION := test-version #use your name
 TW_USE_SAMSUNG_HAPTICS := true
