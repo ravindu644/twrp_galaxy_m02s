@@ -1,10 +1,9 @@
 # TWRP Device tree for Galaxy M02s.
-<hr>
 
-## Yeah, we all know Galaxy M02s is such a shit device. Can't even root with magisk. Damn bootloops. btw I successfully compiled TWRP form source and it booted in M02s. But the only bug is touch screen is not working.
+Trying to use twrp trees by @ravindu_deshan as reference for another twrp compile...
 
-## You might be able to use an USB OTG to deal with the recovery.
+## For instructions check out the OG TWRP trees by ravindu_deshan
 
-## I'm sure, the only bug is the touch screen and it won't give you any mount errors cuz I already compiled the twrp with correct partition values.
+OG-TWRP-trees -> https://github.com/ravindu644/twrp_galaxy_m02s
 
-Join my channel for cool stuffs: <a href="https://t.me/SamsungTweaks">@SamsungTweaks</a>
+Kernel-source -> https://github.com/raihan2000/Samsung-M02s-Kernel
