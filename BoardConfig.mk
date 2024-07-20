@@ -28,12 +28,11 @@ BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 BOARD_PREBUILT_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/dtbo
 BOARD_PREBUILT_DTBIMAGE_DIR := $(DEVICE_PATH)/prebuilt/dtb
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/Image
-#TARGET_KERNEL_SOURCE := $(DEVICE_PATH)/kernel
-#TARGET_KERNEL_CONFIG := $(DEVICE_PATH)kernel/arch/arm64/configs/sdm450_sec_a02q_swa_ins_defconfig
+#TARGET_KERNEL_SOURCE := kernel/samsung/m02s
+#TARGET_KERNEL_CONFIG := sdm450_sec_a02q_swa_ins_defconfig
 #TARGET_KERNEL_ARCH := arm64
 #TARGET_KERNEL_HEADER_ARCH := arm64
 #TARGET_KERNEL_CROSS_COMPILE_PREFIX := aarch64-linux-android-
-#BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
 
 # Partitions
 BOARD_BOOTIMAGE_PARTITION_SIZE := 67108864
@@ -56,6 +55,8 @@ BOARD_SAMSUNG_DYNAMIC_PARTITIONS_SIZE := 4848615424
 BOARD_INCLUDE_RECOVERY_DTBO := true
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
+RECOVERY_SDCARD_ON_DATA := true
+TARGET_RECOVERY_PIXEL_FORMAT := "ABGR_8888"
 
 # Security patch level
 VENDOR_SECURITY_PATCH := 2021-08-01
@@ -73,8 +74,6 @@ TW_THEME := portrait_hdpi
 TW_EXTRA_LANGUAGES := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_USE_TOOLBOX := true
-RECOVERY_SDCARD_ON_DATA := true
-TARGET_RECOVERY_PIXEL_FORMAT := "ABGR_8888"
 TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
 TW_SECONDARY_BRIGHTNESS_PATH := "/sys/class/backlight/panel/brightness"
 TW_MAX_BRIGHTNESS := 365
@@ -85,6 +84,10 @@ TW_HAS_DOWNLOAD_MODE := true
 TW_EXCLUDE_DEFAULT_USB_INIT := true
 TW_DEVICE_VERSION := ragebreaker #use your name
 TW_USE_SAMSUNG_HAPTICS := true
+
+
+
+# Other TWRP Configuration
 #TW_SCREEN_BLANK_ON_BOOT := true
 #TW_NO_EXFAT_FUSE := true
 #TW_NO_LEGACY_PROPS := true
@@ -100,3 +103,16 @@ TW_NO_REBOOT_BOOTLOADER := true
 #TW_EXCLUDE_ENCRYPTED_BACKUPS := true
 #TWRP_EVENT_LOGGING := true
 #TWRP_EXCLUDE_TWRPAPP := true
+
+#Try for fixing touch
+#TW_LOAD_VENDOR_MODULES := "chipone-tddi.ko chipone-tddi_ss.ko focaltech_ts.ko ilitek-tddi.ko gcore_ss.ko gcore_7202h.ko nt36xxx_ss.ko tcs3430.ko"
+#TW_LOAD_VENDOR_BOOT_MODULES := true
+#TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
+
+# System as root
+BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko
+BOARD_SUPPRESS_SECURE_ERASE := true
+
+# Workaround for error copying vendor files to recovery ramdisk
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+TARGET_COPY_OUT_VENDOR := vendor
