@@ -1,25 +1,34 @@
-/system_root   ext4     /dev/block/mapper/system                    flags=display=system;wipeingui
-/vendor        ext4     /dev/block/mapper/vendor                    flags=display=vendor;wipeingui
-/product       ext4     /dev/block/mapper/product                   flags=display=product;wipeingui
-/odm           ext4     /dev/block/mapper/odm                       flags=display=odm;wipeingui
+# Symlinked partitions
+/system_image    emmc    /dev/block/mapper/system                    flags=backup=1;flashimg;display="System Image"
+/vendor_image    emmc    /dev/block/mapper/vendor                    flags=backup=1;flashimg;display="Vendor Image"
+/product_image   emmc    /dev/block/mapper/product                   flags=backup=1;flashimg;display="Product Image"
+/odm_image       emmc    /dev/block/mapper/odm                       flags=backup=1;flashimg;display="Odm Image"
 
-/system_image  emmc     /dev/block/mapper/system                    flags=display="System Image";backup=1;flashimg
-/vendor_image  emmc     /dev/block/mapper/vendor                    flags=display="Vendor Image";backup=1;flashimg
-/product_image emmc     /dev/block/mapper/product                   flags=display="Product Image";backup=1;flashimg
-/odm_image     emmc     /dev/block/mapper/odm                       flags=display="ODM Image";backup=1;flashimg
+# Physical partitions
+/metadata        ext4    /dev/block/bootdevice/by-name/metadata      flags=backup=1;display="Metadata"
+/boot            emmc    /dev/block/bootdevice/by-name/boot          flags=backup=1;flashimg;display="Boot"
+/recovery        emmc    /dev/block/bootdevice/by-name/recovery      flags=backup=1;flashimg;display="Recovery"
+/data            f2fs    /dev/block/bootdevice/by-name/userdata
+/cache           ext4    /dev/block/bootdevice/by-name/cache         flags=backup=1;display="Cache"
+/persist         ext4    /dev/block/bootdevice/by-name/persist       flags=fsflags=ro;display="Persist"
+/firmware        emmc    /dev/block/bootdevice/by-name/apnhlos       flags=backup=1;display="Firmware"
+/modem           emmc    /dev/block/bootdevice/by-name/modem         flags=backup=1;display="Modem"
+/dsp             emmc    /dev/block/bootdevice/by-name/dsp
+/misc            emmc    /dev/block/bootdevice/by-name/misc
+/dtbo            emmc    /dev/block/bootdevice/by-name/dtbo          flags=backup=1;flashimg;display="Dtbo"
+/optics_image    emmc    /dev/block/bootdevice/by-name/optics        flags=backup=1;flashimg;display="Optics Image"
+/prism_image     emmc    /dev/block/bootdevice/by-name/prism         flags=backup=1;flashimg;display="Prism Image"
 
-/boot          emmc     /dev/block/bootdevice/by-name/boot          flags=display="Boot";backup=1;flashimg
-/recovery      emmc     /dev/block/bootdevice/by-name/recovery      flags=display="Recovery";backup=1;flashimg
-/data          f2fs     /dev/block/bootdevice/by-name/userdata      flags=display="Internel Storage";wipeingui
-/cache         ext4     /dev/block/bootdevice/by-name/cache         flags=display="Cache";wipeingui
-/efs           ext4     /dev/block/bootdevice/by-name/sec_efs       flags=display=efs
-/sec_efs       ext4     /dev/block/bootdevice/by-name/sec_efs       flags=display=sec_efs
-/carrier       ext4     /dev/block/bootdevice/by-name/carrier       flags=display=carrier
-/modem         emmc     /dev/block/bootdevice/by-name/apnhlos       flags=display="Modem";backup=1;flashimg
-/misc          emmc     /dev/block/bootdevice/by-name/misc          flags=display=misc;backup=1;flashimg
-/dtbo          emmc     /dev/block/bootdevice/by-name/dtbo          flags=display="Dtbo Image";backup=1;flashimg
-/prism         ext4     /dev/block/bootdevice/by-name/prism         flags=display="Prism";backup=1;flashimg
-/optics        ext4     /dev/block/bootdevice/by-name/optics        flags=display="Optics";backup=1;flashimg
+/keydata         ext4    /dev/block/bootdevice/by-name/keydata       flags=display=keydata;wipeingui
+/keyrefuge       ext4    /dev/block/bootdevice/by-name/keyrefuge     flags=display=keyrefuge;wipeingui
 
-/external_sd	    vfat	  /dev/block/mmcblk1p1	/dev/block/mmcblk1		flags=storage;wipeingui;removable;display="External SD Card"
-/usb-otg		    auto	  /dev/block/sda1	/dev/block/sda				flags=display="USB OTG";storage;wipeingui;removable
+/modemst1_image  emmc    /dev/block/bootdevice/by-name/modest1       flags=backup=1;flashimg;display="MODEMST1"
+/modemst2_image  emmc    /dev/block/bootdevice/by-name/modest2       flags=backup=1;flashimg;display="MODEMST2"
+/efs_image       emmc    /dev/block/bootdevice/by-name/efs           flags=backup=1;flashimg;display="EFS Image"
+/sec_efs_image   emmc    /dev/block/bootdevice/by-name/sec_efs       flags=backup=1;flashimg;display="SEC_EFS Image"
+/fsg_image       emmc    /dev/block/bootdevice/by-name/fsg           flags=backup=1;flashimg;display="FSG Image"
+/persist         emmc    /dev/block/bootdevice/by-name/persist       flags=backup=1;flashimg;display="Persist"
+
+# Removable storage
+/external_sd     vfat    /dev/block/mmcblk1p1    /dev/block/mmcblk1  flags=storage;wipeingui;removable
+/usb-otg         auto    /dev/block/sda1         /dev/block/sda      flags=display="USB-OTG";storage;wipeingui;removable
