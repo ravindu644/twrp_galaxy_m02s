@@ -105,7 +105,11 @@ TW_NO_REBOOT_BOOTLOADER := true
 #TWRP_EXCLUDE_TWRPAPP := true
 
 #Try for fixing touch
-TW_LOAD_VENDOR_MODULES := "chipone-tddi.ko chipone-tddi_ss.ko focaltech_ts.ko ilitek-tddi.ko gcore_ss.ko gcore_7202h.ko nt36xxx_ss.ko tcs3430.ko"
+# device/samsung/m02s/BoardConfig.mk
+
+# Remove the line that starts with TW_LOAD_VENDOR_MODULES :=
+# And replace it with:
+TW_LOAD_VENDOR_MODULES := $(strip $(shell cat $(DEVICE_PATH)/recovery/root/vendor/lib/modules.load))
 TW_LOAD_VENDOR_BOOT_MODULES := true
 TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
 

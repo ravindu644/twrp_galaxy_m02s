@@ -7,10 +7,18 @@
 # Dynamic partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
 
-# fastbootd
+# fastbootd & module libs
 PRODUCT_PACKAGES += \
     android.hardware.fastboot@1.0-impl-mock \
-    fastbootd
+    fastbootd \
+    chipone-tddi \
+    chipone-tddi_ss \
+    focaltech_ts \
+    ilitek-tddi \
+    gcore_ss \
+    gcore_7202h \
+    nt36xxx_ss \
+    tcs3430
 
 #PRODUCT_PACKAGES += \
     android.hardware.input.classifier@1.0-service \
