@@ -1,325 +1,248 @@
 #!/sbin/sh
-#
-# A simple Samsung services disabler by Ian Macdonald.
-#
-# Use this to prime your device after installing TWRP.
 
-ANDROID_ROOT=/system_root
+# Multi-disabler v4.0 for Samsung devices
+# running Android 9 or later.
+# by Ian Macdonald, enhanced by afaneh92 and modified again by ragebreaker
 
-if [ "$1" == "execute" ]; then
+# Global variables
+VERBOSE=false
+DRY_RUN=false
+LOG_FILE="/tmp/multidisabler.log"
+BACKUP_DIR="/tmp/multidisabler_backup"
+SUPPORTED_ANDROID_VERSIONS="9 10 11 12 13"
 
-   md5() {
-     md5sum -b "$1"
-   }
+# Function to log messages
+log() {
+    echo "$1" | tee -a "$LOG_FILE"
+    $VERBOSE && echo "$1"
+}
 
-   file_changed() {
-     local file="$1"
-     local old_md5="$2"
-     local new_md5=$( md5 "$file" )
+# Function to show progress
+show_progress() {
+    echo -n "$1"
+    for i in $(seq 1 10); do
+        echo -n "."
+        sleep 0.1
+    done
+    echo " Done"
+}
 
-     if [ $new_md5 != $old_md5 ]; then
-       echo " -     ...modified."
-     else
-       echo " -     ...unchanged."
-     fi
-   }
+# Function to backup a file
+backup_file() {
+    mkdir -p "$BACKUP_DIR"
+    cp "$1" "$BACKUP_DIR/$(basename "$1").bak"
+    log "Backed up $1"
+}
 
-   rm_from_manifest() {
-     local service=$1
-     local md5
-     local i
+# Function to rollback changes
+rollback() {
+    log "Rolling back changes..."
+    for file in "$BACKUP_DIR"/*; do
+        cp "$file" "${file%.bak}"
+        log "Restored ${file%.bak}"
+    done
+}
 
-     # Package path is different on Android 10. Check and adapt.
+# Function to calculate MD5 hash
+md5() {
+    md5sum -b "$1"
+}
 
-     [ $major -gt 9 ] && local path_extra='\.hardware'
+# Function to check if file has changed
+file_changed() {
+    local file="$1"
+    local old_md5="$2"
+    local new_md5=$(md5 "$file")
 
-     for i in /vendor/etc/vintf/manifest.xml \
-   	   $ANDROID_ROOT/system/etc/vintf/compatibility_matrix.device.xml \
-   	   /vendor/etc/vintf/manifest/vaultkeeper_manifest.xml; do
-       if [ -f $i ]; then
-         echo " -   Found $i."
-         md5=$( md5 $i )
-         sed -i -e '/<hal format="hidl">/{N;/<name>vendor\.samsung'"$path_extra"'\.security\.'"$service"'<\/name>/{:loop;N;/<\/hal>/!bloop;d}}' $i
-         file_changed $i $md5
-       fi
-     done
-   }
+    if [ $new_md5 != $old_md5 ]; then
+        log " -     ...modified."
+    else
+        log " -     ...unchanged."
+    fi
+}
 
-   disable_fbe() {
-     local md5
-     local i
+# Function to resize vendor partition
+resize_vendor() {
+    local dm_block=$(df -k | grep "/vendor" | cut -d' ' -f1)
+    local old_blocks=$(df -k | grep "/vendor" | cut -d' ' -f6)
+    local new_blocks=$((old_blocks + 102400))
+    local available_space=$(df -k / | awk 'NR==2 {print $4}')
 
-     echo " - Disabling file-based encryption (FBE) for /data..."
+    if [ $available_space -lt 102400 ]; then
+        log "Error: Not enough space to resize vendor partition"
+        return 1
+    fi
 
-     # Exynos devices = fstab.exynos????
-     # Qualcomm devices = fstab.qcom
+    log " - Unmounting /vendor..."
+    umount /vendor || { log "Error: Failed to unmount /vendor"; return 1; }
+    log " - Checking vendor block partition before resizing..."
+    e2fsck -f $dm_block || { log "Error: e2fsck failed"; return 1; }
+    log " - Resize - Recommended size (old size+100MB)..."
+    resize2fs $dm_block ${new_blocks}K || { log "Error: resize2fs failed"; return 1; }
+    log " - Make the partition R/W by unsharing its blocks..."
+    e2fsck -E unshare_blocks $dm_block || { log "Error: e2fsck unshare_blocks failed"; return 1; }
+    log " - Run multidisabler again!"
+    return 0
+}
 
-     for i in /vendor/etc/fstab.exynos* \
-   	   /vendor/etc/fstab.qcom*; do
-       if [ -f $i ]; then
-         echo " -   Found $i."
-         md5=$( md5 $i )
-         # This comments out the offending line and adds an edited one.
-         sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
-         file_changed $i $md5
-       fi
-     done
-   }
+# Function to check vendor free size
+vendor_free_size_check() {
+    log " - Checking vendor free size..."
+    if dd if=/dev/zero of=/vendor/test bs=1 count=1 2>/dev/null; then
+        log " -     ...succeeded."
+        rm -f /vendor/test
+    else
+        log " -     ...No free space left on vendor, attempt to resizing vendor..."
+        log " "
+        rm -f /vendor/test
+        resize_vendor || { log "Error: Failed to resize vendor"; rollback; exit 1; }
+    fi
+}
 
-   disable_vaultkeeper() {
-     local md5
-     local i
+# Function to disable file-based encryption
+disable_fbe() {
+    local md5
+    local i
 
-     echo " - Disabling vaultkeeperd..."
+    log " - Disabling file-based encryption (FBE) for /data..."
 
-     if [ $major -gt 9 ]; then
-       # This is Android 10/11: Vaultkeeper has its own init files.
-       #
-       for i in $ANDROID_ROOT/system/etc/init/vk*.rc /vendor/etc/init/vk*.rc /vendor/etc/init/vaultkeeper*; do
-         if [ -f $i ]; then
-         echo " -   Found $i."
-         md5=$( md5 $i )
-         sed -i -e 's/^[^#].*$/# &/' $i
-         file_changed $i $md5
-         fi
-       done
-     else
-       # This is Android 9: Vaultkeeper is started from init.rc.
-       #
-       sed -i -e 's/^[^#].*vaultkeeper.*$/# &/' \
-   	-re '/\/system\/bin\/vaultkeeperd/,/^#?$/s/^[^#]*$/#&/' $ANDROID_ROOT/init.rc
-     fi
+    for i in /vendor/etc/fstab.exynos* /vendor/etc/fstab.qcom*; do
+        if [ -f $i ]; then
+            log " -   Found $i."
+            backup_file "$i"
+            md5=$(md5 $i)
+            if ! $DRY_RUN; then
+                sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+            fi
+            file_changed $i $md5
+        fi
+    done
+}
 
-     # Qualcomm devices such as the T860 and T865 need this, otherwise the log
-     # will be spammed with messages about failed connections to the Vaultkeeper
-     # service.
-     #
-     rm_from_manifest vaultkeeper
+# Function to disable recovery restoration
+disable_recovery_restoration() {
+    local r=recovery-from-boot.p
+    local found
+    local i
 
-     for i in $ANDROID_ROOT/system /vendor; do
-       if [ -f $i/bin/vaultkeeperd ]; then
-         echo " -   Found $i/bin/vaultkeeperd. Disabling..."
-         chmod 0 $i/bin/vaultkeeperd
-       fi
-     done
-   }
+    log " - Disabling restoration of stock recovery..."
 
-   disable_cass() {
-     local md5
-     local i
+    for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
+        if [ -f $i/$r~ ]; then
+            log " -   ...already disabled."
+            found=true
+            break
+        fi
 
-     # The T860 needs this. Otherwise, the log will fill with messages like this:
-     #
-     # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect(4)
-     # 10-20 03:23:20.501 27757 27757 E CASS: Failed to connect ril daemon(2). Retry cnt(6)
-     # The F907B on Android 10 also needs it:
-     #
-     # 04-05 22:21:23.519  3599  3599 E CASS_DEBUG: VaultKeeper is not ready. try again.
-     # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Disconnect ril daemon
-     # 04-05 22:21:23.519  3599  3599 I CASS_DEBUG: Failed to connect ril daemon(1). Retry cnt(2)
-     #
-     # As of OneUI 2.5, other devices need it, too; even Exynos.
-     #
-     echo " - Disabling cass..."
+        if [ -f $i/$r ]; then
+            log " -   Found $i/$r. Disabling..."
+            backup_file "$i/$r"
+            if ! $DRY_RUN; then
+                mv $i/$r $i/$r~
+            fi
 
-     for i in $ANDROID_ROOT/init.rc /vendor/init/cass.rc /vendor/etc/init/cass.rc; do
-       if [ -f $i ]; then
-         echo " -   Found $i. Disabling..."
-         md5=$( md5 $i )
-         sed -i -e 's/^[^#].*cass.*$/# &/' -re '/\/(system|vendor)\/bin\/cass/,/^#?$/s/^[^#]*$/#&/' $i
-         file_changed $i $md5
-       fi
-     done
-   }
+            if [ -f $i/$r~ ]; then
+                log " -     ...succeeded."
+            else
+                log " -     ...failed."
+            fi
 
-   disable_proca() {
-     local md5
-     local i
+            found=true
+            break
+        fi
+    done
 
-     echo " - Disabling process authentication..."
+    [ -z "$found" ] && log " -   Found no stock recovery. Pfft."
+}
 
-     # G97[035]F = pa_daemon.rc on Android 9; pa_daemon_teegris.rc on Android 10.
-     # G977B, N97[05]F, A105F, A505F = pa_daemon_teegris.rc
-     # T510 + T515 = pa_daemon_kinibi.rc
-     # T860 + T865 = pa_daemon_qsee.rc
-     #
-     for i in /vendor/etc/init/pa_daemon*.rc; do
-       if [ -f $i ]; then
-         echo " -   Found $i. Disabling..."
-         sed -i -e 's/^[^#]/# &/' $i
-         file_changed $i $md5
-       fi
-     done
+# Main script execution starts here
+echo " "
+echo "Multi-disabler v4.0 for Samsung devices"
+echo "running Android 9 or later (till 13? Limiting so it doesn't break uncompatible ones...)."
+echo "by Ian Macdonald, enhanced by afaneh92 and again by ragebreaker"
+echo " "
 
-     rm_from_manifest proca
-   }
+# Parse command line arguments
+while getopts "vd" opt; do
+    case $opt in
+        v) VERBOSE=true ;;
+        d) DRY_RUN=true ;;
+        *) echo "Usage: $0 [-v] [-d]"; exit 1 ;;
+    esac
+done
 
-   disable_wsm() {
-     echo " - Disabling wsm..."
-     rm_from_manifest wsm
-   }
+# Start logging
+log "--- Multidisabler started at $(date) ---"
 
-   disable_recovery_restoration() {
-     local r=recovery-from-boot.p
-     local found
-     local i
+# Get device information
+os=$(getprop ro.build.version.release)
+major=${os%%.*}
+bl=$(getprop ro.boot.bootloader)
+dp=$(getprop ro.boot.dynamic_partitions)
 
-     echo " - Disabling restoration of stock recovery..."
+fw=${bl:$((${#bl} - 4)):4}
+device=${bl:0:$((${#bl} - 8))}
+mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
 
-     for i in $ANDROID_ROOT/system /vendor /vendor/etc; do
-       if [ -f $i/$r~ ]; then
-        echo " -   ...already disabled."
-        found=true
-        break
-       fi
-
-       if [ -f $i/$r ]; then
-         echo " -   Found $i/$r. Disabling..."
-         mv $i/$r $i/$r~
-
-         if [ -f $i/$r~ ]; then
-           echo " -     ...succeeded."
-         else
-           echo " -     ...failed."
-         fi
-
-         found=true
-         break
-       fi
-
-     done
-
-     [ -z "$found" ] && echo " -   Found no stock recovery. Pfft."
-   }
-
-   patch_libbluetooth() {
-     [ $major -ne 10 ] && return
-
-     local f=$ANDROID_ROOT/system/lib64/libbluetooth.so
-     local tf=/tmp/f
-
-     echo " - Bluetooth fix requested via renamed zip."
-     echo " - Attempting to patch $f..."
-     echo "     This may take a while."
-
-     if echo $device | grep -E '[GN]9[67][03567][UW0]|F90(0[FN]|7[BN])|T86[05]' >/dev/null; then
-       # Snapdragon based devices, such as Tab S6, Fold (5G), USA and Chinese S9/10/N9/10.
-       substitute='s/88000054691180522925c81a69000037e0030032/04000014691180522925c81a69000037e0031f2a/'
-     else
-       substitute='s/c8000034f4031f2af3031f2ae8030032/1f2003d5f4031f2af3031f2ae8031f2a/'
-     fi
-
-     xxd -p $f | tr -d '\n ' | sed -e $substitute | xxd -rp > $tf
-
-     if ! cmp $tf $f >/dev/null && [ $(stat -c '%s' $tf) -eq $(stat -c '%s' $f) ]; then
-       echo " -   Patching succeeded."
-       touch -r $f $tf
-       chmod 644 $tf
-       mv $tf $f
-     else
-       echo " -   Patching failed. No change made."
-       rm -f $tf
-     fi
-   }
-
-   echo " "
-#   print_full_bar
-   echo "Multi-disabler v3.1 for Samsung devices"
-   echo "running Android 9 or later."
-   echo "by Ian Macdonald"
-#   print_full_bar
-   echo " "
-
-   os=$(getprop ro.build.version.release)
-   major=${os%%.*}
-   bl=$(getprop ro.boot.bootloader)
-   dp=$(getprop ro.boot.dynamic_partitions)
-
-   # Firmware version starts at either 8th or 9th character, depending on length
-   # of bootloader string (12 or 13).
-   #
-   fw=${bl:$((${#bl} - 4)):4}
-
-   # Device is first 5 characters of bootloader string.
-   #
-   device=${bl:0:$((${#bl} - 8))}
-   mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
-
-   if [ "$mft" != samsung ]; then
-     echo " - Device appears not to be made by Samsung."
-     fatal=true
-   elif [ -z "$device" ]; then
-     echo " - Could not determine device model."
-     fatal=true
-   elif [ $major -lt 9 ]; then
-     echo " - This software is incompatible with Android $major."
-     fatal=true
-   fi
-   if [ -n "$fatal" ]; then
-     echo " - Installation aborted."
-     echo " "
-     exit 1
-   fi
-
-   echo " - Detected a $device device with a $fw bootloader."
-   echo " - The environment appears to be Android $major."
-   echo " "
-
-   echo " - Mounting $ANDROID_ROOT..."
-   mount $ANDROID_ROOT 2>/dev/null
-   mount -o remount,rw $ANDROID_ROOT 2>/dev/null
-
-   if ! mount | grep $ANDROID_ROOT >/dev/null; then
-     ANDROID_ROOT=/system_root
-     echo " -   Attempt failed. Mounting at $ANDROID_ROOT..."
-     mount -o rw $ANDROID_ROOT
-     if ! mount | grep $ANDROID_ROOT >/dev/null; then
-       echo " -   Even that attempt failed. Aborting..."
-       exit 2
-     fi
-   fi
-
-   echo " - Mounting /vendor..."
-   mount /vendor
-   mount -o remount,rw /vendor
-
-   if ! mount | grep /vendor >/dev/null; then
-     echo " -   Mount failed. Aborting..."
-     exit 3
-   fi
-
-   disable_fbe
-   disable_recovery_restoration
-
-   if [ "$dp" != true ]; then
-     disable_vaultkeeper
-     disable_proca
-     [ $ZIPNAME != ${ZIPNAME/_btfix//} ] && [ $major -gt 9 ] && patch_libbluetooth
-   fi
-
-   if [ $major -gt 9 ]; then
-     disable_wsm
-     if echo $device | grep -E 'G97([035][FNUW0]|7[BNUW])|N97([05][FNUW0]|6[BNQ0]|1N)|T860|F90(0[FN]|7[BN])|M[23]15F' >/dev/null; then
-       disable_cass
-     fi
-   fi
-
-   echo " - Unmounting /vendor..."
-   umount /vendor
-   echo " - Unmounting $ANDROID_ROOT..."
-   umount $ANDROID_ROOT
-
-   echo " "
-   echo " - Finished."
-   echo " "
-
-else
-   echo "  Multidisabler v3.1 by @ianmacd  "
-   echo ""
-   echo " - Disables FBE, Vaultkeeper, ProcA, wsm,"
-   echo "   cass, Stock recovery rewrite and patches"
-   echo "   libbluetooth for rooted devices"
-   echo ""
-   echo " - Usage : multidisabler execute"
-   echo ""
+# Check for compatibility
+if ! echo "$SUPPORTED_ANDROID_VERSIONS" | grep -q "$major"; then
+    log "Error: Unsupported Android version $major"
+    exit 1
 fi
+
+if [ "$mft" != samsung ]; then
+    log "Error: Device appears not to be made by Samsung."
+    exit 1
+fi
+
+if [ -z "$device" ]; then
+    log "Error: Could not determine device model."
+    exit 1
+fi
+
+log "Detected a $device device with a $fw bootloader."
+log "The environment appears to be Android $major."
+
+# Mount necessary partitions
+show_progress "Mounting partitions"
+mount $ANDROID_ROOT 2>/dev/null
+mount -o remount,rw $ANDROID_ROOT 2>/dev/null
+
+if ! mount | grep $ANDROID_ROOT >/dev/null; then
+    ANDROID_ROOT=/system_root
+    mount -o rw $ANDROID_ROOT
+    if ! mount | grep $ANDROID_ROOT >/dev/null; then
+        log "Error: Failed to mount $ANDROID_ROOT"
+        exit 1
+    fi
+fi
+
+mount /vendor
+mount -o remount,rw /vendor
+
+if ! mount | grep /vendor >/dev/null; then
+    log "Error: Failed to mount /vendor"
+    exit 3
+fi
+
+# Perform disabling operations
+if ! $DRY_RUN; then
+    vendor_free_size_check
+    disable_fbe
+    disable_recovery_restoration
+else
+    log "Dry run mode: No changes will be made."
+    vendor_free_size_check
+    disable_fbe
+    disable_recovery_restoration
+fi
+
+# Unmount partitions
+show_progress "Unmounting partitions"
+umount /vendor
+umount $ANDROID_ROOT
+
+log "--- Multidisabler finished at $(date) ---"
+echo " "
+echo "Finished. Check $LOG_FILE for details."
+echo " "
