@@ -7,9 +7,8 @@ $(call inherit-product, vendor/twrp/config/common.mk)
 # Inherit from m02s device
 $(call inherit-product, device/samsung/m02s/device.mk)
 
-#Other inherits
+#Other inherits (not needed ig)
 #$(call inherit-product, vendor/twrp/config/packages.mk)
-$(call inherit-product, $(LOCAL_PATH)/libopenaes.mk)
 
 PRODUCT_DEVICE := m02s
 PRODUCT_NAME := omni_m02s
