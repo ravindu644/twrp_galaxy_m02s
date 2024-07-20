@@ -105,9 +105,9 @@ TW_NO_REBOOT_BOOTLOADER := true
 #TWRP_EXCLUDE_TWRPAPP := true
 
 #Try for fixing touch
-#TW_LOAD_VENDOR_MODULES := "chipone-tddi.ko chipone-tddi_ss.ko focaltech_ts.ko ilitek-tddi.ko gcore_ss.ko gcore_7202h.ko nt36xxx_ss.ko tcs3430.ko"
-#TW_LOAD_VENDOR_BOOT_MODULES := true
-#TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
+TW_LOAD_VENDOR_MODULES := "chipone-tddi.ko chipone-tddi_ss.ko focaltech_ts.ko ilitek-tddi.ko gcore_ss.ko gcore_7202h.ko nt36xxx_ss.ko tcs3430.ko"
+TW_LOAD_VENDOR_BOOT_MODULES := true
+TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
 
 # System as root
 BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko
