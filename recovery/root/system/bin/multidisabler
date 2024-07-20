@@ -244,5 +244,9 @@ umount $ANDROID_ROOT
 
 log "--- Multidisabler finished at $(date) ---"
 echo " "
-echo "Finished. Check $LOG_FILE for details."
+echo "Printing log file:"
+echo " "
+cat $LOG_FILE
+echo " "
+echo "Finished. log saved at $LOG_FILE for details."
 echo " "
