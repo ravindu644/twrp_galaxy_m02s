@@ -4,8 +4,4 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-LOCAL_PATH := $(call my-dir)
-
-ifeq ($(TARGET_DEVICE),m02s)
-include $(call all-subdir-makefiles,$(LOCAL_PATH))
-endif
+$(call inherit-product, vendor/twrp/Android.mk)
