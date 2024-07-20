@@ -5,9 +5,9 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/omni_m02s.mk
+    $(LOCAL_DIR)/twrp_m02s.mk
 
 COMMON_LUNCH_CHOICES := \
-    omni_m02s-user \
-    omni_m02s-userdebug \
-    omni_m02s-eng
+    twrp_m02s-user \
+    twrp_m02s-userdebug \
+    twrp_m02s-eng
