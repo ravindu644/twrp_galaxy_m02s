@@ -1,4 +1,4 @@
-#!/sbin/bash
+#!/sbin/sh
 #
 #	This file is part of the OrangeFox Recovery Project
 # 	Copyright (C) 2024 The OrangeFox Recovery Project
