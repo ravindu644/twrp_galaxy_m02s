@@ -2,7 +2,7 @@
 
 cc_prebuilt_binary {
     name: "chipone-tddi",
-    srcs: ["recovery/root/vendor/lib/chipone-tddi.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/chipone-tddi.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -12,7 +12,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "chipone-tddi_ss",
-    srcs: ["recovery/root/vendor/lib/chipone-tddi_ss.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/chipone-tddi_ss.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -22,7 +22,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "focaltech_ts",
-    srcs: ["recovery/root/vendor/lib/focaltech_ts.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/focaltech_ts.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -32,7 +32,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "ilitek-tddi",
-    srcs: ["recovery/root/vendor/lib/ilitek-tddi.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/ilitek-tddi.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -42,7 +42,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "gcore_ss",
-    srcs: ["recovery/root/vendor/lib/gcore_ss.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/gcore_ss.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -52,7 +52,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "gcore_7202h",
-    srcs: ["recovery/root/vendor/lib/gcore_7202h.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/gcore_7202h.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -62,7 +62,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "nt36xxx_ss",
-    srcs: ["recovery/root/vendor/lib/nt36xxx_ss.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/nt36xxx_ss.ko"],
     vendor: true,
     strip: {
         none: true,
@@ -72,7 +72,7 @@ cc_prebuilt_binary {
 
 cc_prebuilt_binary {
     name: "tcs3430",
-    srcs: ["recovery/root/vendor/lib/tcs3430.ko"],
+    srcs: ["recovery/root/vendor/lib/modules/tcs3430.ko"],
     vendor: true,
     strip: {
         none: true,
