@@ -9,13 +9,20 @@ VERBOSE=false
 DRY_RUN=false
 LOG_FILE="/tmp/multidisabler.log"
 BACKUP_DIR="/tmp/multidisabler_backup"
-SUPPORTED_ANDROID_VERSIONS="9 10 11 12 13"
+SUPPORTED_ANDROID_VERSIONS="9 10 11 12 13 14"
 
 # Function to log messages
 log() {
     echo "$1" | tee -a "$LOG_FILE"
     $VERBOSE && echo "$1"
 }
+
+# Works for some devices?
+#if [ "$major" -gt 13 ] || ! echo "$SUPPORTED_ANDROID_VERSIONS" | grep -q "$major"; then
+#    log "Error: This script only supports Android versions 9 through 13. Detected version: $major"
+#    exit 1
+#fi
+
 
 # Function to show progress
 show_progress() {
@@ -45,26 +52,24 @@ rollback() {
 
 # Function to calculate MD5 hash
 md5() {
-    md5sum -b "$1"
+  md5sum -b "$1"
 }
 
-# Function to check if file has changed
-file_changed() {
-    local file="$1"
-    local old_md5="$2"
+has_file_changed() {
+  local file="$1"
+  local old_md5="$2"
     local new_md5=$(md5 "$file")
 
-    if [ $new_md5 != $old_md5 ]; then
+  if [ $new_md5 != $old_md5 ]; then
         log " -     ...modified."
-    else
+  else
         log " -     ...unchanged."
-    fi
+  fi
 }
 
-# Function to resize vendor partition
 resize_vendor() {
-    local dm_block=$(df -k | grep "/vendor" | cut -d' ' -f1)
-    local old_blocks=$(df -k | grep "/vendor" | cut -d' ' -f6)
+    local dm_block=$(df -k | cat | grep "/vendor" | cut -d' ' -f1)
+    local old_blocks=$(df -k | cat | grep "/vendor" | cut -d' ' -f6)
     local new_blocks=$((old_blocks + 102400))
     local available_space=$(df -k / | awk 'NR==2 {print $4}')
 
@@ -101,37 +106,42 @@ vendor_free_size_check() {
 
 # Function to disable file-based encryption
 disable_fbe() {
-    local md5
-    local i
+  local md5
+  local i
 
     log " - Disabling file-based encryption (FBE) for /data..."
 
-    for i in /vendor/etc/fstab.exynos* /vendor/etc/fstab.qcom*; do
-        if [ -f $i ]; then
+  #
+  # Exynos devices = fstab.exynos*.
+  # MediaTek devices = fstab.mt*.
+  # Snapdragon devices = fstab.qcom.
+  #
+  for i in /vendor/etc/fstab.exynos* /vendor/etc/fstab.mt* /vendor/etc/fstab.qcom*; do
+    if [ -f $i ]; then
             log " -   Found $i."
             backup_file "$i"
             md5=$(md5 $i)
             if ! $DRY_RUN; then
                 sed -i -e 's/^\([^#].*\)fileencryption=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
+                sed -i -e 's/^\([^#].*\)forceencrypt=[^,]*\(.*\)$/# &\n\1encryptable\2/g' $i
             fi
-            file_changed $i $md5
-        fi
-    done
+        file_changed $i $md5
+    fi
+  done
 }
 
-# Function to disable recovery restoration
 disable_recovery_restoration() {
-    local r=recovery-from-boot.p
-    local found
-    local i
+  local r=recovery-from-boot.p
+  local found
+  local i
 
-    log " - Disabling restoration of stock recovery..."
+  log " - Disabling restoration of stock recovery..."
 
-    for i in $ANDROID_ROOT $ANDROID_ROOT/system; do
+  for i in $ANDROID_ROOT $ANDROID_ROOT/system /vendor; do
         if [ -f $i/$r~ ]; then
             log " -   ...already disabled."
-            found=true
-            break
+	        found=true
+	        break
         fi
 
         if [ -f $i/$r ]; then
@@ -157,8 +167,8 @@ disable_recovery_restoration() {
 
 # Main script execution starts here
 echo " "
-echo "Multi-disabler v4.0 for Samsung devices"
-echo "running Android 9 or later (till 13? Limiting so it doesn't break uncompatible ones...)."
+echo "Multi-disabler v3.1-mod for Samsung devices"
+echo "running Android 9 or later"
 echo "by Ian Macdonald, enhanced by afaneh92 and again by ragebreaker"
 echo " "
 
@@ -180,14 +190,23 @@ major=${os%%.*}
 bl=$(getprop ro.boot.bootloader)
 dp=$(getprop ro.boot.dynamic_partitions)
 
+# Firmware version starts at either 8th or 9th character, depending on length
+# of bootloader string (12 or 13).
+#
 fw=${bl:$((${#bl} - 4)):4}
+
+# Device is first 5 characters of bootloader string.
+#
 device=${bl:0:$((${#bl} - 8))}
 mft=$(getprop ro.product.manufacturer | tr '[A-Z]' '[a-z]')
 
 # Check for compatibility
 if ! echo "$SUPPORTED_ANDROID_VERSIONS" | grep -q "$major"; then
-    log "Error: Unsupported Android version $major"
+    if [ "$major" -lt 9 ]; then
+    log "Error: Android version $major is not supported"
     exit 1
+    fi
+    log "Warning: Android version $major as not been tested"
 fi
 
 if [ "$mft" != samsung ]; then
@@ -200,11 +219,11 @@ if [ -z "$device" ]; then
     exit 1
 fi
 
-log "Detected a $device device with a $fw bootloader."
-log "The environment appears to be Android $major."
+log " - Detected a $device device with a $fw bootloader."
+log " - The environment appears to be Android $major."
+log " "
 
-# Mount necessary partitions
-show_progress "Mounting partitions"
+show_progress " - Mounting $ANDROID_ROOT..."
 mount $ANDROID_ROOT 2>/dev/null
 mount -o remount,rw $ANDROID_ROOT 2>/dev/null
 
@@ -217,6 +236,7 @@ if ! mount | grep $ANDROID_ROOT >/dev/null; then
     fi
 fi
 
+echo " - Mounting /vendor..."
 mount /vendor
 mount -o remount,rw /vendor
 
@@ -240,13 +260,11 @@ fi
 # Unmount partitions
 show_progress "Unmounting partitions"
 umount /vendor
+echo " - Unmounting $ANDROID_ROOT..."
 umount $ANDROID_ROOT
 
-log "--- Multidisabler finished at $(date) ---"
+log "--- finished ---"
 echo " "
-echo "Printing log file:"
-echo " "
-cat $LOG_FILE
 echo " "
 echo "Finished. log saved at $LOG_FILE for details."
 echo " "
