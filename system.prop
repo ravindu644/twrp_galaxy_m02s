@@ -8,5 +8,3 @@ sys.usb.controller=7000000.dwc3
 ro.boot.dynamic_partitions=true
 
 ro.boot.bootdevice=7824900.sdhci
-
-# Additional properties can be added if needed
