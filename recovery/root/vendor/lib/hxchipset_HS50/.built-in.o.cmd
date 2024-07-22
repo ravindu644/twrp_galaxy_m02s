@@ -1,0 +1,1 @@
+cmd_drivers/input/touchscreen/hxchipset_HS50/built-in.o :=  /home/ymsr/toolchains/aarch64-linux-android-4.9-master/bin/aarch64-linux-android-ld -EL   -r -o drivers/input/touchscreen/hxchipset_HS50/built-in.o drivers/input/touchscreen/hxchipset_HS50/himax_ic_HX83102.o drivers/input/touchscreen/hxchipset_HS50/himax_ic_HX83112.o drivers/input/touchscreen/hxchipset_HS50/himax_mmi.o 
