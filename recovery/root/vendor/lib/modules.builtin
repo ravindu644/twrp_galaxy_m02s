@@ -1,0 +1,5 @@
+kernel/drivers/input/touchscreen/of_touchscreen.ko
+kernel/drivers/input/touchscreen/cyttsp5/cyttsp5.ko
+kernel/drivers/input/touchscreen/cyttsp5/cyttsp5_i2c.ko
+kernel/drivers/input/touchscreen/cyttsp5/cyttsp5_loader.ko
+kernel/drivers/input/touchscreen/cyttsp5/cyttsp5_device_access.ko
