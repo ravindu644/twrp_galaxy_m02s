@@ -65,3 +65,8 @@ odm                                       /odm            ext4      ro,barrier=1
 /dev/block/bootdevice/by-name/dtbo        /dtbo           emmc      default                                                                                    recoveryonly
 /dev/block/bootdevice/by-name/prism       /prism          ext4      defaults                                                                                   recoveryonly
 /dev/block/bootdevice/by-name/optics      /optics         ext4      defaults                                                                                   recoveryonly
+
+
+# Removable storage
+/external_sd     vfat    /dev/block/mmcblk1p1    /dev/block/mmcblk1  flags=storage;wipeingui;removable
+/usb-otg         auto    /dev/block/sda1         /dev/block/sda      flags=display="USB-OTG";storage;wipeingui;removable
