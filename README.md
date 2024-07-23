@@ -6,4 +6,4 @@ If anyone has tested it on an A02s, pls open a issue..
 
 base-tree -> https://github.com/ravindu644/twrp_galaxy_m02s
 
-Kernel-source -> https://github.com/raihan2000/Samsung-M02s-Kernel
+Kernel-source -> https://gitlab.com/mlmstudios1/m02s-kernel
