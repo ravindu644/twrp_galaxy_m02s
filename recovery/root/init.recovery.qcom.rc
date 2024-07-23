@@ -1,3 +1,14 @@
+# from vendor/etc/init/vendor.samsung.hardware.sysinput@1.1-service.rc
+on early-boot
+    insmod /vendor/lib/nt36xxx_ss.ko
+    insmod /vendor/lib/chipone-tddi_ss.ko
+    insmod /vendor/lib/chipone-tddi.ko
+    insmod /vendor/lib/gcore_ss.ko
+    insmod /vendor/lib/gcore_7202h.ko
+    insmod /vendor/lib/ilitek-tddi.ko
+    insmod /vendor/lib/focaltech_ts.ko
+    insmod /vendor/lib/tcs3430.ko
+
 on init
     write /sys/class/backlight/panel0-backlight/brightness 200
     setprop sys.usb.configfs 1
@@ -8,6 +19,12 @@ on init
     setprop vendor.usb.acm_port1 ""
     setprop vendor.usb.acm_enable 0
     setprop ro.minui.default_rotation "ROTATION_NONE"
+
+on property:ro.boot.usbcontroller=*
+    setprop sys.usb.controller ${ro.boot.usbcontroller}
+    wait /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode peripheral
+    wait /sys/class/udc/${ro.boot.usbcontroller} 1
 
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
@@ -36,12 +53,7 @@ on fs
     mount functionfs adb /dev/usb-ffs/adb uid=2000,gid=2000
     write /sys/class/android_usb/android0/f_ffs/aliases adb
 
-on property:ro.boot.usbcontroller=*
-    setprop sys.usb.controller ${ro.boot.usbcontroller}
-    wait /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode
-    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode peripheral
-    wait /sys/class/udc/${ro.boot.usbcontroller} 1
-
+# USB configurations
 on property:sys.usb.config=none && property:sys.usb.configfs=1
     write /config/usb_gadget/g1/UDC "none"
     stop adbd
