@@ -2,7 +2,7 @@
 
 Tested on M02s (havent tested on A02s but will most likely work)
 
-If anyone has tested it on an A02s, pls open a issue to change this line..
+If anyone has tested it on an A02s, pls open an issue to change this line..
 
 Check the releases and this [XDA thread](https://xdaforums.com/t/guide-m025f-flashing-a-gsi-with-and-without-twrp.4643733/) for instructions
 
