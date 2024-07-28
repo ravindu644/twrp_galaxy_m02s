@@ -1,13 +1,6 @@
 # from vendor/etc/init/vendor.samsung.hardware.sysinput@1.1-service.rc
-on early-boot
-    insmod /vendor/lib/nt36xxx_ss.ko
-    insmod /vendor/lib/chipone-tddi_ss.ko
-    insmod /vendor/lib/chipone-tddi.ko
-    insmod /vendor/lib/gcore_ss.ko
-    insmod /vendor/lib/gcore_7202h.ko
-    insmod /vendor/lib/ilitek-tddi.ko
-    insmod /vendor/lib/focaltech_ts.ko
-    insmod /vendor/lib/tcs3430.ko
+#on early-boot
+
 
 on init
     write /sys/class/backlight/panel0-backlight/brightness 200

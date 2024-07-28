@@ -1,4 +1,4 @@
-DEVICE_PATH := device/samsung/m02s
+DEVICE_PATH := device/galaxy/m02s
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
@@ -88,13 +88,13 @@ TW_USE_SAMSUNG_HAPTICS := true
 
 TARGET_RECOVERY_QCOM_RTC_FIX := true
 # Other TWRP Configuration
-#TW_SCREEN_BLANK_ON_BOOT := true
+TW_SCREEN_BLANK_ON_BOOT := true
 #TW_NO_EXFAT_FUSE := true
-#TW_NO_LEGACY_PROPS := true
-#TW_NO_BIND_SYSTEM := true
+TW_NO_LEGACY_PROPS := true
+TW_NO_BIND_SYSTEM := true
 TWRP_INCLUDE_LOGCAT := true
 TARGET_USES_LOGD := true
-#TW_INCLUDE_LOGICAL := odm,vendor
+TW_INCLUDE_LOGICAL := odm,vendor
 #TW_SUPPORT_INPUT_AIDL_MOUSE := true
 #TW_SUPPORT_INPUT_MOUSE := true
 TW_NO_REBOOT_BOOTLOADER := true
@@ -105,14 +105,14 @@ TW_NO_REBOOT_BOOTLOADER := true
 
 #Try for fixing touch
 # And replace it with:
-TW_LOAD_VENDOR_MODULES := $(strip $(shell cat $(DEVICE_PATH)/recovery/root/vendor/lib/modules.load))
+#TW_LOAD_VENDOR_MODULES := $(strip $(shell cat $(DEVICE_PATH)/recovery/root/vendor/lib/modules.load))
 #TW_LOAD_VENDOR_BOOT_MODULES := true
 #TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
 
 # System as root
-BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko
+BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko keydata keyrefuge
 BOARD_SUPPRESS_SECURE_ERASE := true
 
 # Workaround for error copying vendor files to recovery ramdisk
-BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
-TARGET_COPY_OUT_VENDOR := vendor
+#BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+#TARGET_COPY_OUT_VENDOR := vendor
