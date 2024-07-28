@@ -1,10 +1,6 @@
 ro.display.series=Samsung M02s
-
 ro.product.board=QC_Reference_Phone
 ro.board.platform=msm8953
-
 sys.usb.controller=7000000.dwc3
-
 ro.boot.dynamic_partitions=true
-
 ro.boot.bootdevice=7824900.sdhci
