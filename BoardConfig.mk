@@ -1,4 +1,4 @@
-DEVICE_PATH := device/samsung/m02s
+DEVICE_PATH := device/galaxy/m02s
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
@@ -110,7 +110,7 @@ TW_LOAD_VENDOR_MODULES := $(strip $(shell cat $(DEVICE_PATH)/recovery/root/vendo
 #TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
 
 # System as root
-BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko
+BOARD_ROOT_EXTRA_FOLDERS := cache carrier efs optics prism omr odm socko odmko keydata keyrefuge
 BOARD_SUPPRESS_SECURE_ERASE := true
 
 # Workaround for error copying vendor files to recovery ramdisk
