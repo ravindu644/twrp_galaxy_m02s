@@ -1,4 +1,4 @@
-DEVICE_PATH := device/galaxy/m02s
+DEVICE_PATH := device/samsung/m02s
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
