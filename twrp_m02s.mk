@@ -11,7 +11,7 @@ $(call inherit-product, vendor/twrp/config/common.mk)
 $(call inherit-product, vendor/twrp/Android.mk)
 
 # Inherit from m02s device
-$(call inherit-product, device/samsung/m02s/device.mk)
+$(call inherit-product, device/galaxy/m02s/device.mk)
 
 #PRODUCT_COPY_FILES += $(call find-copy-subdir-files,*,device/samsung/m02s/recovery/root/vendor/firmware,recovery/root/vendor/firmware)
 
